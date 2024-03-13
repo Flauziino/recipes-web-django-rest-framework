@@ -1,0 +1,12 @@
+{% if user.is_authenticated %}
+
+    <div class="login-message">
+    Você esta logado com {{ request.user.username }}. <br>
+    Você pode
+    <a href="{% url "authors:dashboard" %}">ver suas receitas</a>,
+    <a href="{% url "authors:dashboard_create" %}">criar suas receitas</a> ou
+    {% include "author/partials/_form_logout.html" %}
+    <a class="authors-logout-link" href="#">clique aqui</a> para sair.
+    </div>
+
+{% endif %}

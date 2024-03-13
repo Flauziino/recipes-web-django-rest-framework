@@ -1,0 +1,23 @@
+{% extends 'global/base.html' %}
+
+{% block title %}Dashboard Receita| {% endblock title %}
+
+{% block content %}
+
+  <div class="main-content center container">
+
+    <h2>Dashboard receita</h2>
+
+    {% include 'global/partials/_messages.html' %}
+    {% include 'author/partials/_login_message.html' %}
+
+    <div class="left">
+
+      {% include 'global/partials/_form.html' %}
+    
+    </div>
+
+  </div>
+
+
+{% endblock content %}
