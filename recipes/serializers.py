@@ -1,51 +1,49 @@
-from django.contrib.auth.models import User
-
 from rest_framework import serializers
 
-from .models import Category
+from .models import Recipe
 
 from tag.models import Tag
 
 
-class TagSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField(max_length=50)
-    slug = serializers.SlugField()
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['id', 'name', 'slug']
 
 
-class RecipeSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    title = serializers.CharField(
-        max_length=65,
-    )
-    description = serializers.CharField(
-        max_length=255,
-    )
+class RecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = [
+            'id', 'title', 'description', 'public',
+            'preparation', 'category', 'category_name',
+            'author', 'author_name', 'tags', 'tag_objects',
+            'tag_links'
+        ]
     public = serializers.BooleanField(
-        source='is_published'
+        source='is_published',
+        read_only=True
     )
-    preparation = serializers.SerializerMethodField()
+    preparation = serializers.SerializerMethodField(read_only=True)
     # primarykeyRelated mostra o ID
-    category = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all()
-    )
     # stringRelated mostra o Nome
     category_name = serializers.StringRelatedField(
         source='category'
     )
-    author = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all()
-    )
     author_name = serializers.StringRelatedField(
-        source='author'
-    )
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(),
-        many=True
+        source='author',
+        read_only=True
     )
     tag_objects = TagSerializer(
         many=True,
-        source='tags'
+        source='tags',
+        read_only=True
+    )
+    tag_links = serializers.HyperlinkedRelatedField(
+        many=True,
+        source='tags',
+        view_name='recipes:recipe_api_tag_v2',
+        read_only=True
     )
 
     def get_preparation(self, recipe):
