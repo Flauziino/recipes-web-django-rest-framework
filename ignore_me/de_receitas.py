@@ -221,3 +221,23 @@ def recipe_api_detail(request, pk):
         receita.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 ))
+
+# urls sem uso de router
+path(
+    'recipes/api/v2',
+    api.RecipeAPIv2ViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }),
+    name='recipes_api_v2'
+),
+
+path(
+    'recipes/api/v2/<int:pk>/',
+    api.RecipeAPIv2ViewSet.as_view({
+        'get': 'retrieve',
+        'patch': 'partial_update',
+        'delete': 'destroy',
+    }),
+    name='recipe_api_detail_v2'
+),
