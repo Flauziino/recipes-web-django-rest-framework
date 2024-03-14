@@ -52,13 +52,20 @@ urlpatterns = [
     # URLS PARA ENTREGA DE API TRUE
     path(
         'recipes/api/v2',
-        api.recipe_api_list,
+        api.RecipeAPIv2ViewSet.as_view({
+            'get': 'list',
+            'post': 'create'
+        }),
         name='recipes_api_v2'
     ),
 
     path(
         'recipes/api/v2/<int:pk>/',
-        api.recipe_api_detail,
+        api.RecipeAPIv2ViewSet.as_view({
+            'get': 'retrieve',
+            'patch': 'partial_update',
+            'delete': 'destroy',
+        }),
         name='recipe_api_detail_v2'
     ),
 

@@ -1,6 +1,7 @@
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.viewsets import ModelViewSet
 
 from django.shortcuts import get_object_or_404
 
@@ -10,61 +11,14 @@ from recipes.serializers import RecipeSerializer, TagSerializer
 from tag.models import Tag
 
 
-@api_view(http_method_names=['post', 'get'])
-def recipe_api_list(request):
-    if request.method == 'GET':
-        receitas = Recipe.objects.all().order_by('-id')[:10]
-        receitas.select_related('category', 'author').prefetch_related('tags')
-        serializador = RecipeSerializer(
-            instance=receitas,
-            many=True,
-            context={'request': request}
-        )
-        return Response(serializador.data)
-
-    elif request.method == 'POST':
-        # aqui drabalha-se igual um form django.
-        serializador = RecipeSerializer(
-            data=request.data
-        )
-        serializador.is_valid(raise_exception=True)
-        serializador.save()
-        return Response(
-            serializador.data,
-            status=status.HTTP_201_CREATED
-        )
-
-
-@api_view(http_method_names=['get', 'patch', 'delete'])
-def recipe_api_detail(request, pk):
-    receita = get_object_or_404(
-        Recipe, pk=pk
+class RecipeAPIv2ViewSet(ModelViewSet):
+    queryset = (
+        Recipe.objects.filter(is_published=True)
+        .order_by('-id')
     )
-    if request.method == 'GET':
-        serializador = RecipeSerializer(
-            instance=receita,
-            many=False,
-            context={'request': request}
-        )
-
-        return Response(serializador.data)
-
-    elif request.method == 'PATCH':
-        serializador = RecipeSerializer(
-            instance=receita,
-            data=request.data,
-            many=False,
-            context={'request': request},
-            partial=True
-        )
-        serializador.is_valid(raise_exception=True)
-        serializador.save()
-
-        return Response(serializador.data)
-
-    elif request.method == 'DELETE':
-        receita.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    queryset.select_related('author', 'category').prefetch_related('tags')
+    serializer_class = RecipeSerializer
+    pagination_class = PageNumberPagination
 
 
 @api_view()
