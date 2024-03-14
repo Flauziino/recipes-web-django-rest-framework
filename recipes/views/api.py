@@ -35,18 +35,36 @@ def recipe_api_list(request):
         )
 
 
-@api_view()
+@api_view(http_method_names=['get', 'patch', 'delete'])
 def recipe_api_detail(request, pk):
     receita = get_object_or_404(
         Recipe, pk=pk
     )
-    receita.select_related('category', 'author').prefetch_related('tags')
-    serializador = RecipeSerializer(
-        instance=receita,
-        many=False,
-        context={'request': request}
-    )
-    return Response(serializador.data)
+    if request.method == 'GET':
+        serializador = RecipeSerializer(
+            instance=receita,
+            many=False,
+            context={'request': request}
+        )
+
+        return Response(serializador.data)
+
+    elif request.method == 'PATCH':
+        serializador = RecipeSerializer(
+            instance=receita,
+            data=request.data,
+            many=False,
+            context={'request': request},
+            partial=True
+        )
+        serializador.is_valid(raise_exception=True)
+        serializador.save()
+
+        return Response(serializador.data)
+
+    elif request.method == 'DELETE':
+        receita.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view()

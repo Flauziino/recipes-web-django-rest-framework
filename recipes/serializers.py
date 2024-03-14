@@ -49,6 +49,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    def positive_number(self, string: str):
+        try:
+            if string.isnumeric():
+                n = int(string)
+                return n
+        except (ValueError, TypeError):
+            return None
+
     def get_preparation(self, recipe):
         return f'{recipe.preparation_time} {recipe.preparation_time_unit}'
 
@@ -63,6 +71,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return title
 
     def validate(self, attrs):
+
         super_validate = super().validate(attrs)
         cleaned_data = attrs
 
@@ -70,8 +79,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         title = cleaned_data.get('title')
         description = cleaned_data.get('description')
-        preparation_time = int(cleaned_data.get('preparation_time'))
-        servings = int(cleaned_data.get('servings'))
+        preparation_time = cleaned_data.get('preparation_time')
+        servings = cleaned_data.get('servings')
+
+        self.positive_number(str(preparation_time))
+        self.positive_number(str(servings))
 
         if len(title) < 5:
             errors['title'].append(
