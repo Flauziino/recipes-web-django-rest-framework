@@ -73,5 +73,5 @@
     "javascript": "javascriptreact",
     "typescript": "typescriptreact"
   },
-  "python.analysis.autoImportCompletions": true
+  "python.analysis.autoImportCompletions": false
 }

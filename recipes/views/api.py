@@ -15,6 +15,10 @@ from utils.permissions import IsOwner
 from tag.models import Tag
 
 
+class MyAPIv2Pagination(PageNumberPagination):
+    page_size = 10
+
+
 class RecipeAPIv2ViewSet(ModelViewSet):
     queryset = (
         Recipe.objects.filter(is_published=True)
@@ -22,7 +26,7 @@ class RecipeAPIv2ViewSet(ModelViewSet):
     )
     queryset.select_related('author', 'category').prefetch_related('tags')
     serializer_class = RecipeSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = MyAPIv2Pagination
     permission_classes = [IsAuthenticatedOrReadOnly,]
     http_method_names = [
         'get', 'options', 'head', 'patch', 'post', 'delete'
