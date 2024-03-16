@@ -1,6 +1,6 @@
 from django.forms import ValidationError
 from authors.forms.recipe_form import AuthorRecipeForm
-from authors.views import DashboardRecipeEdit
+from authors.views.site import DashboardRecipeEdit
 
 from recipes.models import Recipe
 

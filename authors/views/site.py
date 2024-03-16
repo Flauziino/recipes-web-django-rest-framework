@@ -8,9 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .models import Profile
+from ..models import Profile
 from recipes.models import Recipe
-from .forms import RegisterForm, LoginForm, AuthorRecipeForm
+from ..forms import RegisterForm, LoginForm, AuthorRecipeForm
 
 
 def register_view(request):
