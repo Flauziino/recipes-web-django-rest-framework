@@ -8,6 +8,36 @@ from .test_recipes_base import RecipeMixin
 
 
 class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
+
+    def get_auth_data(self, username='user', password='password'):
+        userdata = {
+            'username': username,
+            'password': password
+        }
+        user = self.make_author(
+            username=userdata.get('username'),
+            password=userdata.get('password')
+        )
+        response = self.client.post(
+            reverse('recipes:token_obtain_pair'), data={**userdata}
+        )
+        return {
+            'jwt_access_token': response.data.get('access'),
+            'jwt_refresh_token': response.data.get('refresh'),
+            'user': user,
+        }
+
+    def get_recipe_raw_data(self):
+        return {
+            'title': 'Title',
+            'description': 'Description',
+            'preparation_time': 1,
+            'preparation_time_unit': 'Hora',
+            'servings': 1,
+            'servings_unit': 'Pessoa',
+            'preparation_steps': 'step by step'
+        }
+
     def test_recipe_api_list_returns_status_code_200(self):
         api_url = reverse(
             'recipes:recipes-api-list'
@@ -122,4 +152,99 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
         response = self.client.get(api_url)
         self.assertEqual(
             response.data.get('count'), 1
+        )
+
+    def test_recipe_api_list_user_must_send_jwt_token_to_create_recipe(self):
+        api_url = reverse(
+            'recipes:recipes-api-list'
+        )
+        response = self.client.post(api_url)
+        self.assertEqual(
+            response.status_code, 401
+        )
+
+    def test_recipe_api_list_logged_user_can_create_a_recipe(self):
+        # faz a receita
+        recipe_raw_data = self.get_recipe_raw_data()
+        auth_data = self.get_auth_data()
+        jwt_access = auth_data.get('jwt_access_token')
+
+        # url
+        api_url = reverse(
+            'recipes:recipes-api-list'
+        )
+
+        # realiza o post para usuario logado
+        response = self.client.post(
+            api_url,
+            data=recipe_raw_data,
+            HTTP_AUTHORIZATION=f'Bearer {jwt_access}'
+        )
+
+        # checa se foi criada a receita (codigo 201)
+        self.assertEqual(
+            response.status_code, 201
+        )
+
+    def test_recipe_api_list_logged_user_can_update_a_recipe(self):
+        # Config do teste
+        recipe = self.make_recipe()
+        access_data = self.get_auth_data()
+        jwt_access = access_data.get('jwt_access_token')
+        author = access_data.get('user')
+        recipe.author = author
+        recipe.save()
+        # url
+        api_url = reverse(
+            'recipes:recipes-api-detail', args=(recipe.id,)
+        )
+
+        # realiza o patch com o usuario correto logado
+        response = self.client.patch(
+            api_url,
+            data={
+                'title': f'Title update by {author}'
+            },
+            HTTP_AUTHORIZATION=f'Bearer {jwt_access}'
+        )
+
+        # checando se foi atualizada com novo titulo utilizando "CONTAINS"
+        self.assertContains(
+            response,
+            f'Title update by {author}'
+        )
+
+    def test_recipe_api_list_logged_user_can_only_update_your_own_recipe(self):
+        # Config do teste
+        recipe = self.make_recipe()
+
+        # Usuario que pode atualizar (dono)
+        access_data = self.get_auth_data(username='can_update')
+
+        # Pegando o access para usuario que NAO pode atualizar
+        another_user = self.get_auth_data(username='cant_update')
+        jwt_access = another_user.get('jwt_access_token')
+
+        # Linkando o usuario que PODE atualizar a receita (dono)
+        author = access_data.get('user')
+        recipe.author = author
+        recipe.save()
+
+        # url
+        api_url = reverse(
+            'recipes:recipes-api-detail', args=(recipe.id,)
+        )
+
+        # tenta realizar o patch (update)
+        # com o usuario que NAO é dono da receita
+        response = self.client.patch(
+            api_url,
+            data={},
+            HTTP_AUTHORIZATION=f'Bearer {jwt_access}'
+        )
+
+        # checando se o codigo foi "forbiden" (403), pois usuario n tem acesso
+        # pois nao é o dono dessa receita
+        self.assertEqual(
+            response.status_code, 403
         )
