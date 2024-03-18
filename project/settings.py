@@ -41,6 +41,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+# CORS Headers
+INSTALLED_APPS += [
+    "corsheaders",
+]
+
 # Rest_Framework
 INSTALLED_APPS += [
     'rest_framework',
@@ -57,6 +63,7 @@ INSTALLED_APPS += [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -169,6 +176,9 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:5500',
+]
 
 MESSAGE_TAGS = {
     constants.DEBUG: 'message-debug',
