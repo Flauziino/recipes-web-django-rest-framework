@@ -49,9 +49,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-    def positive_number(self, string: str):
+    def is_number(self, string: str):
         try:
-            if string.isnumeric():
+            if string.isdigit():
                 n = int(string)
                 return n
         except (ValueError, TypeError):
@@ -59,16 +59,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_preparation(self, recipe):
         return f'{recipe.preparation_time} {recipe.preparation_time_unit}'
-
-    def validate_title(self, value):
-        title = value
-
-        if len(title) < 5:
-            raise serializers.ValidationError(
-                'O campo precisa de pelo menos 5 caracteres!'
-            )
-
-        return title
 
     def validate(self, attrs):
 
@@ -82,8 +72,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         preparation_time = cleaned_data.get('preparation_time')
         servings = cleaned_data.get('servings')
 
-        self.positive_number(str(preparation_time))
-        self.positive_number(str(servings))
+        self.is_number(str(preparation_time))
+        self.is_number(str(servings))
 
         if len(title) < 5:
             errors['title'].append(

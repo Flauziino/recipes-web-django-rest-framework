@@ -1,19 +1,33 @@
 import io
+import os
 
 from PIL import Image
 
-from django.core.files.uploadedfile import SimpleUploadedFile
+from pathlib import Path
+
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from parameterized import parameterized
 
 from .test_recipes_base import RecipeTestBase, Recipe
 
+from utils.imagem import resize_image
+
 
 class RecipeModelsTest(RecipeTestBase):
 
     def setUp(self) -> None:
+        # criando receita
         self.recipe = self.make_recipe()
+
+        # criando uma imagem fake
+        image_django = 'test_image.jpg'
+        self.image_path = Path(settings.MEDIA_ROOT / image_django).resolve()
+        self.image = Image.new('RGB', (800, 600), 'white')
+        self.image.save(self.image_path, 'JPEG')
+
         return super().setUp()
 
     def make_recipe_no_defaults(self):
@@ -116,3 +130,19 @@ class RecipeModelsTest(RecipeTestBase):
         self.assertTrue(getattr(
             receita, 'cover_changed', True
         ))
+
+    def test_resize_imagem_working_right(self):
+        new_image = resize_image(
+            self.image_path, new_width=400, new_height=300
+        )
+
+        # verificando se a nova imagem tem o mesmo tamanho que foi passado
+        # para dentro da função
+        self.assertEqual(
+            new_image.size, (400, 300)
+        )
+
+        # testando se a nova imagem existe (foi salva corretamente)
+        self.assertTrue(
+            os.path.exists(self.image_path)
+        )
