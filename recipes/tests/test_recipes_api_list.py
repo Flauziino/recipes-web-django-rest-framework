@@ -6,8 +6,10 @@ from unittest.mock import patch
 
 from .test_recipes_base import RecipeMixin
 
+from tag.models import Tag
 
-class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
+
+class RecipeAPIListv2Test(test.APITestCase, RecipeMixin):
 
     def get_auth_data(self, username='user', password='password'):
         userdata = {
@@ -247,4 +249,120 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
         # pois nao é o dono dessa receita
         self.assertEqual(
             response.status_code, 403
+        )
+
+    def test_recipe_api_list_logged_user_can_delete_a_recipe(self):
+        # Config do teste
+        recipe = self.make_recipe()
+        access_data = self.get_auth_data()
+        jwt_access = access_data.get('jwt_access_token')
+        author = access_data.get('user')
+        recipe.author = author
+        recipe.save()
+        # url
+        api_url = reverse(
+            'recipes:recipes-api-detail', args=(recipe.id,)
+        )
+
+        # realiza o delete com o usuario correto logado
+        response = self.client.delete(
+            api_url,
+            HTTP_AUTHORIZATION=f'Bearer {jwt_access}'
+        )
+
+        # checando se recebe o codigo 204 (no content)
+        self.assertEqual(
+            response.status_code,
+            204
+        )
+
+        # tenta realizar o delete novamente com o usuario correto logado
+        response = self.client.delete(
+            api_url,
+            HTTP_AUTHORIZATION=f'Bearer {jwt_access}'
+        )
+
+        # checando novamente buscando receber 404 (not found)
+        self.assertEqual(
+            response.status_code,
+            404
+        )
+
+    def test_recipe_api_list_logged_user_can_only_delete_your_own_recipe(self):
+        # Config do teste
+        recipe = self.make_recipe()
+
+        # Usuario que pode atualizar (dono)
+        access_data = self.get_auth_data(username='can_update')
+
+        # Pegando o access para usuario que NAO pode atualizar
+        another_user = self.get_auth_data(username='cant_update')
+        jwt_access = another_user.get('jwt_access_token')
+
+        # Linkando o usuario que PODE atualizar a receita (dono)
+        author = access_data.get('user')
+        recipe.author = author
+        recipe.save()
+
+        # url
+        api_url = reverse(
+            'recipes:recipes-api-detail', args=(recipe.id,)
+        )
+
+        # tenta realizar o patch (update)
+        # com o usuario que NAO é dono da receita
+        response = self.client.delete(
+            api_url,
+            data={},
+            HTTP_AUTHORIZATION=f'Bearer {jwt_access}'
+        )
+
+        # checando se o codigo foi "forbiden" (403), pois usuario n tem acesso
+        # pois nao é o dono dessa receita
+        self.assertEqual(
+            response.status_code, 403
+        )
+
+    def test_recipe_api_tag_list_return_404_if_no_tag(self):
+        api_url = reverse(
+            'recipes:recipe_api_tag_v2',
+            kwargs={'pk': 1}
+        )
+        response = self.client.get(api_url)
+
+        self.assertEqual(
+            response.status_code, 404
+        )
+
+    def test_recipe_api_tag_list_return_status_code_200(self):
+        tag = Tag.objects.create(
+            name='tag_test',
+            slug='tag-test'
+        )
+
+        api_url = reverse(
+            'recipes:recipe_api_tag_v2',
+            kwargs={'pk': tag.id}
+        )
+        response = self.client.get(api_url)
+
+        self.assertEqual(
+            response.status_code, 200
+        )
+
+    def test_recipe_api_tag_list_show_tag(self):
+        tag = Tag.objects.create(
+            name='tag_test',
+            slug='tag-test'
+        )
+
+        api_url = reverse(
+            'recipes:recipe_api_tag_v2',
+            kwargs={'pk': tag.id}
+        )
+        response = self.client.get(api_url)
+
+        self.assertContains(
+            response,
+            tag.name
         )

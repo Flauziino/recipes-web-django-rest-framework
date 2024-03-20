@@ -51,21 +51,7 @@ urlpatterns = [
         name='recipe'
     ),
 
-    # URL PARA ENTREGA DE API EXEMPLO
-    path(
-        'recipes/api/v1/',
-        site.RecipeListIndexViewApi.as_view(),
-        name='recipes_api'
-    ),
-
-    path(
-        'recipes/api/v1/<int:pk>',
-        site.RecipeDetailViewApi.as_view(),
-        name='recipe_api_detail'
-    ),
-
     # URLS PARA ENTREGA DE API TRUE
-
     path(
         'recipes/api/v2/tag/<int:pk>/',
         api.tag_api_detail,
