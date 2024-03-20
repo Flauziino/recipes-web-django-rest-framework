@@ -51,9 +51,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def is_number(self, string: str):
         try:
-            if string.isdigit():
-                n = int(string)
-                return n
+            n = float(string)
+            return n
         except (ValueError, TypeError):
             return None
 

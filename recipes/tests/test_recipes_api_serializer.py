@@ -87,3 +87,13 @@ class RecipeAPIListv2Test(RecipeAPIListv2Test):
         serializer = serializer.is_number('abc')
 
         self.assertEqual(serializer, None)
+        # ou
+        self.assertIsNone(serializer)
+
+    def test_recipes_serializer_can_convert_a_string_to_number(self):
+        # instanciando para poder chamar o metodo
+        serializer = RecipeSerializer()
+        # chamando um metodo passando uma string que pode ser convertida p
+        # um numero inteiro
+        serializer = serializer.is_number('1')
+        self.assertEqual(serializer, 1)
