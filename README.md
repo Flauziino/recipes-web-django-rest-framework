@@ -1,7 +1,7 @@
 # Projeto Web Simples Utilizando Django e Django REST Framework
-Um projeto simples desenvolvido com Django Web Framework e Django REST Framework, com o objetivo de demonstrar o nível de habilidade. O projeto utiliza Django Web Framework na versão 4.2.11 e Django REST Framework na versão 3.14.0. O foco está na organização das pastas, cobertura de testes (100%), uso de classes baseadas em views e realização do deploy.
+Um projeto simples desenvolvido com Django Web Framework e Django REST Framework, com o objetivo de demonstrar o nível de habilidade. O projeto utiliza Django Web Framework na versão 4.2.11 e Django REST Framework na versão 3.14.0. O foco está na organização das pastas, cobertura de testes (100%), uso de views baseadas em classes e realização do deploy.
 
-Conteúdo Geral do Projeto
+## Conteúdo Geral do Projeto
 O projeto conta com aplicativos para autores, receitas e tags. O aplicativo de tags foi criado exclusivamente para ser associado às receitas, portanto, seus testes estão dentro do mesmo.
 
 O projeto também inclui uma API, que está organizada de forma diferente do projeto acoplado. No projeto acoplado, o aplicativo de receitas é utilizado apenas para visualização, enquanto o aplicativo de autores realiza o CRUD das receitas. Na API, todo o CRUD é realizado no próprio aplicativo de receitas, sendo que o aplicativo de autores serve apenas para exibir os autores.
